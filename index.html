@@ -1,0 +1,191 @@
+<html>
+  <head>
+      <script
+			  src="https://code.jquery.com/jquery-4.0.0.min.js"
+			  integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao="
+			  crossorigin="anonymous"></script>
+      <script type="text/javascript">
+
+          $(() => {
+              const currentDate = new Date();
+              const todayDateInfo = getDateInfo(currentDate);
+
+
+              const lastSevenDayInfo = getPreviousDates(currentDate, 7).map(getDateInfo);
+            
+              console.log(lastSevenDayInfo);
+              populateDayHistory(lastSevenDayInfo);
+          });
+
+          function populateDayHistory(dayInfos) {
+
+              let $dayContainer = $("#day-container");
+
+              for (dayInfo of dayInfos) {
+
+                  let dayTemplate = populateDayHistoryTemplate(dayInfo);
+
+                  console.log(dayInfo);
+                  console.log(dayTemplate);
+                  $dayContainer.append(dayTemplate);
+              }
+          }
+          
+          function populateDayHistoryTemplate(dayInfo) {
+            let dayTemplate = $("#day-template").html();
+            
+            dayTemplate = dayTemplate.replaceAll("${full}", dayInfo.dayName);
+            dayTemplate = dayTemplate.replaceAll("${abbr}", dayInfo.dayName.substring(0, 3));
+            dayTemplate = dayTemplate.replaceAll("${initial}", dayInfo.dayName.charAt(0));
+            return dayTemplate;
+          }
+
+          /*
+           * Returns an object containing the zeroed Date, a formatted Date and the
+           * day initial.
+           */
+          function getDateInfo(date) {
+            let year = date.getFullYear().toString();
+            let month = date.getMonth().toString().padStart(2, '0');
+            let day = date.getDate().toString().padStart(2, '0');
+
+            let actualDate = new Date(year, month, day);
+            let actualDateFormat = [year, month, day].join("-");
+            let dayName = actualDate.toLocaleDateString(undefined, {weekday: 'long'});
+
+            return {
+                date: actualDate,
+                formattedDate: actualDateFormat,
+                dayName: dayName,
+            };
+          }
+
+          function getPreviousDates(date, numberOfPriorDays) {
+              let result = new Array(numberOfPriorDays);
+              for (let i = 0; i < numberOfPriorDays; i++) {
+
+                  let newDate = new Date(date);
+                  newDate.setDate(newDate.getDate() - i - 1);
+                  result[i] = newDate;
+              }
+
+              return result;
+          }
+      </script>
+      <style>
+        
+        .day-container {
+            display: flex;
+            flex-direction: row-reverse;
+            flex-wrap: nowrap;
+            justify-content: space-evenly;
+
+            gap: 5%;
+
+            .day-status {
+
+                display: flex;
+                flex: 1 0;
+                justify-content: space-evenly;
+                flex-direction: column;
+                flex-wrap: nowrap;
+                gap: 5px;
+
+                .status {
+
+                    display: flex;
+                    flex: 1 0 25px;
+                   /* width: 25px;*/
+                    height: 25px;
+                    gap: 5px;
+                    border: 2px solid black;
+                    border-radius: 5px;
+                    background-color: black;
+                    
+                    color: white;
+                    justify-content: center;
+                    align-content: center;
+                    align-items: center;
+
+                    &.positive {
+                        background-color: green;
+                    }
+                    &.neutral {
+                        background-color: black;
+                        container-type: inline-size;
+                    }
+                    &.negative {
+                        background-color: red;
+                    }
+
+                    span {
+
+
+                        display: none;
+                    }
+
+                    @container (width <= 50px) {
+                        span.initial {
+                            display: inline;
+                        }
+                    }
+                    @container (50px < width <= 100px) {
+                        span.abbr {
+                            display: inline;
+                        }
+                    }
+                    @container (width > 100px) {
+                        span.full {
+                            display: inline;
+                        }
+                    }
+                }
+            }
+
+
+            
+        }
+
+        .
+      </style>
+  </head>
+  <body>
+      <template id="day-template">
+          <div class="day-status">
+              <div class="status positive"></div>
+              <div class="status positive"></div>
+              <div class="status neutral">
+                <span class="full">${full}</span>
+                <span class="abbr">${abbr}</span>
+                <span class="initial">${initial}</span>
+              </div>
+              <div class="status negative"></div>
+              <div class="status negative"></div>
+          </div>
+      </template>
+      <div id="day-container" class="day-container">
+      </div>
+  </body>
+</head>
+
+<!-- 
+    function render(props) {
+  return function(tok, i) {
+    return (i % 2) ? props[tok] : tok;
+  };
+}
+
+var items = [{
+  url: 'http://foo.com',
+  img: '/images/bar.png',
+  title: 'Lorem Ipsum'
+}];
+
+$(function() {
+  var itemTpl = $('script[data-template="listitem"]').text().split(/\$\{(.+?)\}/g);
+
+  $('.list-items').append(items.map(function(item) {
+    return itemTpl.map(render(item)).join('');
+  }));
+});
+-->

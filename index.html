@@ -7,7 +7,25 @@
 			  crossorigin="anonymous"></script>
       
       <style>
-        
+        :root {
+            --color-primary: '#84C5E6';
+            --color-primary-light: color-mix(in oklab, var(--color-primary), white 30%);
+            --color-primary-dark: color-mix(in oklab, var(--color-primary), black 30%);
+
+            --color-background: rgb(29, 30, 32);
+            --color-background-light: color-mix(in oklab, var(--color-background), white 30%);
+            --color-background-dark: color-mix(in oklab, var(--color-background), black 30%);
+
+            --color-positive: #53b481;
+            --color-negative: #f08188;
+
+            --color-lighter: rgba(255, 255, 255, 0,3);
+            --color-darker: rgba(0, 0, 0, 0.3);
+
+            background-color: var(--color-background);
+            font-face: Arial, sans-serif;
+        }
+
         .day-container {
             display: flex;
             flex-direction: row-reverse;
@@ -43,24 +61,21 @@
                         display: flex;
 
                     &.positive {
-                        background-color: green;
+                        background-color: var(--color-positive);
                     }
                     &.neutral {
                         background-color: rgba(0,0,0, 0.5);
                         container-type: inline-size;
                     }
                     &.negative {
-                        background-color: red;
+                        background-color: var(--color-negative);
                     }
                     &.empty {
                         background-color: rgba(0, 0, 0, 0.1);
                         border-color: rgba(0, 0, 0, 0.2);
                     }
 
-
                     span {
-
-
                         display: none;
                     }
 
@@ -84,19 +99,75 @@
         }
 
         #current-status {
+                    border: 2px solid black;
 
             display: flex;
             margin: 50px;
 
-            .status {
+            .daily-total {
+                width: 100%;
+                background-color: var(--color-background-light);
+                display: flex;
+                justify-content: center;
+
+                .center-divider {
+                    background-color: white;
+                    height: 100%;
+                    width: 2px;
+                    flex: 0 0 2px;
+                }
+                
+            }
+
+
+            .block-container {
+                flex: 1 1 auto;
+                display: flex;
+                align-items: center;
+            }
+
+            #positive-blocks {
+
+                .unit.value {
+                    background-color: var(--color-positive);
+                }
+            }
+            #negative-blocks {
+                flex-direction: row-reverse;
+
+                .unit.value {
+                    background-color: var(--color-negative);
+                }
+            }
+
+            .side-total {
+                display: flex;
+                font-size: 72;
+                font-weight: 600;
+                width: 8rem;
+                height: 100%;
+                align-content: center;
+                justify-content: center;
+            }
+
+            #positive-total {
+                color: var(--color-positive);
+            }
+            #negative-total {
+                color: var(--color-negative);
+            }
+
+            .unit {
 
                 flex: 1 1 auto;
                 display: flex;
                 height: 50px;
-                border: 2px solid black;
                 align-items: center;
                 justify-content: center;
 
+                &.ghost {
+                    border: 0;
+                }
                 &.negative {
                     background-color: red;
                 }
@@ -111,6 +182,7 @@
                 &.bonus {
                     background-color: lightgreen;
                 }
+                
 
 
                 &.weight-1 {
@@ -153,18 +225,20 @@
       
       <div id="current-status">
           <template id="current-status-item">
-              <div class="status ${weight} ${type}"></div>
+              <div class="unit value ${type}"><i class="fa-solid ${iconClass}"></i></div>
+          </template>
+          <template id="current-status-ghost-item">
+              <div class="unit ghost"></div>
           </template>
 
-          <div class="total">14</div>
-          <div class="status"></div>
-          <div class="status negative"><i class="fa-solid fa-cookie-bite"></i></div>
-          <div class="status weight-3 negative"><i class="fa-solid fa-couch"></i></div>
-          <div class="status weight-2 penalty"><i class="fa-solid fa-bed"></i></div>
-          <div class="status weight-2 bonus"><i class="fa-solid fa-person-running"></i></div>
-          <div class="status weight-2 positive"><i class="fa-solid fa-dumbbell"></i></div>
-          <div class="status"></div>
-          <div class="total">9</div>
+        <div class="daily-total">
+            <div id="negative-total" class="side-total">${negativeTotal}</div>
+            <div id="negative-blocks" class="block-container"></div>
+            <div class="center-divider"></div>
+            <div id="positive-blocks" class="block-container"></div>
+            <div id="positive-total" class="side-total">${positiveTotal}</div>
+        </div>
+    </div>
           
       </div>
 
@@ -177,16 +251,86 @@
 
               const lastSevenDayInfo = getPreviousDates(currentDate, 7).map(getDateInfo);
             
+          const data = [
+              { weight: 3, type: "strength"},
+              { weight: 1, type: "strength"},
+              { weight: -2, type: "strength"},
+              { weight: -1, type: "strength"}];
+              
               console.log(lastSevenDayInfo);
               populateDayHistory(lastSevenDayInfo);
+              populateDailyTotal(data);
           });
+
+
+          function populateDailyTotal(dailyChoices) {
+
+              
+              const $itemTemplate = $("#current-status-item");
+              const $ghostItemTemplate = $("#current-status-ghost-item");
+              const $positiveBlocks = $("#positive-blocks");
+              const $positiveTotal = $("#positive-total");
+              const $negativeBlocks = $("#negative-blocks");
+              const $negativeTotal = $("#negative-total");
+
+              let positiveTotal = 0;
+              let negativeTotal = 0;
+              let maxTotal = 0;
+
+              for (choice of dailyChoices) {
+
+                  console.log("doing choice " + JSON.stringify(choice));
+                  let value = choice.weight;
+                  let $template = populateChoiceTemplate(choice);
+
+                  if (value > 0) {
+                      $positiveBlocks.append($template);
+                      positiveTotal += value;
+                  } else {
+                      $negativeBlocks.append($template);
+                      negativeTotal += Math.abs(value);
+                  }
+              }
+
+              const difference = positiveTotal - negativeTotal;
+              
+              if (difference != 0) {
+                  let ghostBlock = $("#current-status-ghost-item").html();
+                  ghostBlock = ghostBlock.repeat(Math.abs(difference));
+                  if (difference < 0) {
+                      $positiveBlocks.append(ghostBlock);
+                  } else {
+                      $negativeBlocks.append(ghostBlock);
+                  }
+              }
+
+              $negativeTotal.text(Math.abs(negativeTotal));
+              $positiveTotal.text(positiveTotal);
+                
+          }
+
+          function populateChoiceTemplate(choice) {
+              let template = $("#current-status-item").html();
+              template = template.replaceAll("${type}", choice.type);
+              template = template.replaceAll("${iconClass}", getIconClass(choice.type));
+              let $template = $(template);
+              $template.css("flex", Math.abs(choice.weight));
+
+              return $template;
+          }
+
+          function getIconClass(type) {
+              let result;
+              switch (type) {
+                  case "strength": result = "fa-dumbbell"; break;
+                  case "running": result = "fa-person-running"; break;
+              }
+              return result;
+          }
 
           function populateDayHistory(dayInfos) {
 
               const values = Array.from({ length: dayInfos.length }, () => Math.floor(Math.random() * 5) - 2);
-
-
-
 
               let $dayContainer = $("#day-container");
 

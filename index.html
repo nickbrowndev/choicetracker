@@ -238,9 +238,13 @@
             <div id="positive-blocks" class="block-container"></div>
             <div id="positive-total" class="side-total">${positiveTotal}</div>
         </div>
+
     </div>
           
-      </div>
+    <div class="main-form">
+
+            
+    </div>
 
     <script type="text/javascript">
 
@@ -327,6 +331,34 @@
               }
               return result;
           }
+
+          const mappings = {
+            "cake" : "fa-cake-candles",
+            "strength" : "fa-dumbell",
+            "running": "fa-person-running",
+            "squash": "fa-table-tennis-paddle-ball"
+            "healthy-snack": "fa-apple-whole",
+            "unhealthy-snack": "fa-cookie-bite",
+            "sweets": "fa-candy-cane",
+            "cycling": "fa-bicycle", 
+            "cycle-commuting": "fa-person-biking",
+            "early-bed": "fa-bed",
+            "pilates": "",
+            "mobility" : "",
+            "junkfood": "fa-pizza-slice",
+            "beer": "fa-beer-mug-empty",
+            "ice-cream": "fa-ice-cream"
+          };
+
+          function renderSingleIcon(spec) {
+            let pack = spec.pack ? spec.pack : "fa-solid";
+            let icon = spec.icon;
+            
+            return `<i class="${pack} ${icon}"></i>`;
+          }
+
+
+
 
           function populateDayHistory(dayInfos) {
 

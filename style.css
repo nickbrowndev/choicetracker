@@ -1,0 +1,199 @@
+
+:root {
+    --color-primary: '#84C5E6';
+    --color-primary-light: color-mix(in oklab, var(--color-primary), white 30%);
+    --color-primary-dark: color-mix(in oklab, var(--color-primary), black 30%);
+
+    --color-background: rgb(29, 30, 32);
+    --color-background-light: color-mix(in oklab, var(--color-background), white 30%);
+    --color-background-dark: color-mix(in oklab, var(--color-background), black 30%);
+
+    --color-positive: #53b481;
+    --color-negative: #f08188;
+
+    --color-lighter: rgba(255, 255, 255, 0,3);
+    --color-darker: rgba(0, 0, 0, 0.3);
+
+    background-color: var(--color-background);
+    font-face: Arial, sans-serif;
+}
+
+.day-container {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+
+    gap: 5%;
+
+    .day-status {
+
+        display: flex;
+        flex: 1 0;
+        justify-content: space-evenly;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 5px;
+
+        .status {
+
+            display: flex;
+            flex: 1 0 25px;
+           /* width: 25px;*/
+            height: 25px;
+            gap: 5px;
+            border: 2px solid black;
+            border-radius: 5px;
+            background-color: black;
+            
+            color: white;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+                display: flex;
+
+            &.positive {
+                background-color: var(--color-positive);
+            }
+            &.neutral {
+                background-color: rgba(0,0,0, 0.5);
+                container-type: inline-size;
+            }
+            &.negative {
+                background-color: var(--color-negative);
+            }
+            &.empty {
+                background-color: rgba(0, 0, 0, 0.1);
+                border-color: rgba(0, 0, 0, 0.2);
+            }
+
+            span {
+                display: none;
+            }
+
+            @container (width <= 50px) {
+                span.initial {
+                    display: inline;
+                }
+            }
+            @container (50px < width <= 100px) {
+                span.abbr {
+                    display: inline;
+                }
+            }
+            @container (width > 100px) {
+                span.full {
+                    display: inline;
+                }
+            }
+        }
+    }
+}
+
+#current-status {
+            border: 2px solid black;
+
+    display: flex;
+    margin: 50px;
+
+    .daily-total {
+        width: 100%;
+        background-color: var(--color-background-light);
+        display: flex;
+        justify-content: center;
+
+        .center-divider {
+            background-color: white;
+            height: 100%;
+            width: 2px;
+            flex: 0 0 2px;
+        }
+        
+    }
+
+
+    .block-container {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+    }
+
+    #positive-blocks {
+
+        .unit.value {
+            background-color: var(--color-positive);
+        }
+    }
+    #negative-blocks {
+        flex-direction: row-reverse;
+
+        .unit.value {
+            background-color: var(--color-negative);
+        }
+    }
+
+    .side-total {
+        display: flex;
+        font-size: 72;
+        font-weight: 600;
+        width: 8rem;
+        height: 100%;
+        align-content: center;
+        justify-content: center;
+    }
+
+    #positive-total {
+        color: var(--color-positive);
+    }
+    #negative-total {
+        color: var(--color-negative);
+    }
+
+    .unit {
+
+        flex: 1 1 auto;
+        display: flex;
+        height: 50px;
+        align-items: center;
+        justify-content: center;
+
+        &.ghost {
+            border: 0;
+        }
+        &.negative {
+            background-color: red;
+        }
+
+        &.penalty {
+            background-color: darkred;
+        }
+        &.positive {
+            background-color: green;
+        }
+
+        &.bonus {
+            background-color: lightgreen;
+        }
+        
+
+
+        &.weight-1 {
+            flex-grow: 1;
+        }
+        
+        &.weight-2 {
+            flex-grow: 2;
+        }
+
+        &.weight-3 {
+            flex-grow: 3;
+        }
+
+        i {
+            width: 20px;
+            height: 20px;
+        }
+}
+
+.
+

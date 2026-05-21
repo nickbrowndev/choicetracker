@@ -50,8 +50,15 @@
 
         <div id="behaviour-selection" class="button-group">
             <template id="behaviour-selector-template">
-                <button id="behaviour-${behaviour}" class="behaviour-selector">${behaviour-label}</button>
+                <button id="behaviour-${id}" class="behaviour-selector">
+                    <span class="behaviour-icon">${icon}</span>
+                    <span class="behaviour-description">${description}</span>
+                </button>
+            </template>
+
+
         </div>
+
         <fieldset id="activity-selection">
             <legend>Type</legend>
 

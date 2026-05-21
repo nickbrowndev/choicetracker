@@ -1,4 +1,13 @@
-  $(() => {
+/*
+TOOD:
+ - [ ] Add local caching for recent values
+ - [ ] Retrieve history on load (if required)
+ - [ ] Update page state on button submit
+ - [ ] arrange and style buttons
+ - [ ] add custom entry form
+ */
+
+  $ (() => {
       const currentDate = new Date();
       const todayDateInfo = getDateInfo(currentDate);
 
@@ -14,6 +23,7 @@
       console.log(lastSevenDayInfo);
       populateDayHistory(lastSevenDayInfo);
       populateDailyTotal(data);
+      createSelectionButtons();
   });
 
 
@@ -184,3 +194,110 @@
       return result;
   }
 
+  function createSelectionButtons() {
+      let template = document.getElementById('behaviour-selector-template');
+      let destination = document.getElementById('behaviour-selection');
+      for (let behaviourId in BEHAVIOUR_CONFIGS) {
+
+          let behaviour = BEHAVIOUR_CONFIGS[behaviourId];
+          for (let choice of behaviour.behaviours) {
+              const clone = template.content.cloneNode(true);
+
+              const button = clone.querySelector('button');
+              const iconSpan = button.querySelector(".behaviour-icon");
+              const descriptionSpan = button.querySelector(".behaviour-description");
+
+              button.id = "behaviour-" + choice.id;
+              iconSpan.textContent = choice.icon ?? behaviour.icon;
+              descriptionSpan.textContent = choice.description;
+
+              button.addEventListener('click', () => {
+                  logChoice(choice);
+              });
+
+              destination.append(clone);
+          }
+      }
+  }
+
+  function logChoice(choice) {
+      submitLogEntry(choice.id, choice.score, null, choice.isStrenuous);
+      //updatePageState(choice);
+  }
+              
+
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKMKvT-0CZLIELoEd84hGkv3wIJTnMp7UpnZugwLLsiYed5NdWdqHeK8HHzu4Ou0WcTg/exec';
+
+          /**
+ * Submits a logged behavioral event to the Google Sheet database
+ * @param {string} behaviorId - The configuration key (e.g., 'pil_missed', 'act_journey')
+ * @param {string} metadata - Optional context notes
+ */
+async function submitLogEntry(id, score, note, isStrenuous) {
+    // Capture the absolute truth of the moment in ISO format
+    const payload = {
+        timestamp: new Date().toISOString(),
+        id: id,
+        score: score,
+        note: note,
+        isStrenuous: isStrenuous
+    };
+
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors', // Crucial for crossing domains safely
+            headers: {
+                'Content-Type': 'text/plain' // Using text/plain avoids restrictive CORS preflight walls in Apps Script
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            console.log("Database updated successfully:", result.rowAdded);
+            return true;
+        } else {
+            console.error("Database rejected write:", result.message);
+            return false;
+        }
+    } catch (error) {
+        console.error("Network failure pushing log entry:", error);
+        return false;
+    }
+}
+
+const LocalCache = {
+    KEY: 'dashboard_history_cache',
+    TTL: 1000 * 60 * 10, // Cache expiry window: 10 minutes
+
+    // Retrieve cached array
+    get() {
+        const rawData = localStorage.getItem(this.KEY);
+        if (!rawData) return null;
+
+        try {
+            const cache = JSON.parse(rawData);
+            // Optional: You can check cache.timestamp here if you want a strict cut-off
+            return cache.data;
+        } catch (e) {
+            console.error("Cache compilation corrupted, purging record.");
+            this.clear();
+            return null;
+        }
+    },
+
+    // Save fresh array from Google Sheets
+    set(logsArray) {
+        const cacheObject = {
+            timestamp: Date.now(),
+            data: logsArray
+        };
+        localStorage.setItem(this.KEY, JSON.stringify(cacheObject));
+    },
+
+    clear() {
+        localStorage.removeItem(this.KEY);
+    }
+};

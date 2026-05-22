@@ -20,11 +20,30 @@ TOOD:
       { weight: -2, type: "strength"},
       { weight: -1, type: "strength"}];
       
+      if (false) {
+          retrieveHistory()
+          .then(responseJson => parseHistory(responseJson))
+          .then(history => {
+              populateDayHistory(history);
+
+              populateDailyTotal(history);
+          });
+      }
       console.log(lastSevenDayInfo);
       populateDayHistory(lastSevenDayInfo);
       populateDailyTotal(data);
       createSelectionButtons();
   });
+
+  function retrieveHistory() {
+      let url = 'https://api.sheety.co/133b32e7a990e2ebc6f2c10d5797c26f/behaviourTracker/logs';
+     return fetch(url)
+    .then((response) => response.json());
+  }
+
+  function parseHistory(history) {
+      // TOOD
+  }
 
 
   function populateDailyTotal(dailyChoices) {
@@ -225,7 +244,7 @@ TOOD:
       //updatePageState(choice);
   }
               
-
+const SPREADSHEET_ID = '1DvetnxdpQCfQp6SWMYRqbN1JIo4hazKae6x_djsiTIk';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKMKvT-0CZLIELoEd84hGkv3wIJTnMp7UpnZugwLLsiYed5NdWdqHeK8HHzu4Ou0WcTg/exec';
 
           /**

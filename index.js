@@ -7,33 +7,31 @@ TOOD:
  - [ ] add custom entry form
  */
 
-  $ (() => {
-      const currentDate = new Date();
-      const todayDateInfo = getDateInfo(currentDate);
+  const currentDate = new Date();
+  const todayDateInfo = getDateInfo(currentDate);
 
 
-      const lastSevenDayInfo = getPreviousDates(currentDate, 7).map(getDateInfo);
-    
-      const data = [
-      { weight: 3, type: "strength"},
-      { weight: 1, type: "strength"},
-      { weight: -2, type: "strength"},
-      { weight: -1, type: "strength"}];
-      
-      if (false) {
-          retrieveHistory()
-          .then(responseJson => parseHistory(responseJson))
-          .then(history => {
-              populateDayHistory(history);
+  const lastSevenDayInfo = getPreviousDates(currentDate, 7).map(getDateInfo);
 
-              populateDailyTotal(history);
-          });
-      }
-      console.log(lastSevenDayInfo);
-      populateDayHistory(lastSevenDayInfo);
-      populateDailyTotal(data);
-      createSelectionButtons();
-  });
+  const data = [
+  { weight: 3, type: "strength"},
+  { weight: 1, type: "strength"},
+  { weight: -2, type: "strength"},
+  { weight: -1, type: "strength"}];
+  
+  if (false) {
+      retrieveHistory()
+      .then(responseJson => parseHistory(responseJson))
+      .then(history => {
+          populateDayHistory(history);
+
+          populateDailyTotal(history);
+      });
+  }
+  console.log(lastSevenDayInfo);
+  populateDayHistory(lastSevenDayInfo);
+  populateDailyTotal(data);
+  createSelectionButtons();
 
   function retrieveHistory() {
       let url = 'https://api.sheety.co/133b32e7a990e2ebc6f2c10d5797c26f/behaviourTracker/logs';
@@ -41,20 +39,73 @@ TOOD:
     .then((response) => response.json());
   }
 
-  function parseHistory(history) {
-      // TOOD
+  function parseHistory(data) {
+      return groupByLocalDayWithOffset(data, DAY_MINUTE_OFFSET);
   }
 
+      // TOOD
+      /* 
+      [{
+        id: 2,
+        note: "",
+        score: -2,
+        strenuous: false,
+        timestamp: "2026-05-21T00:52:09.789Z"
+        },
+        {..}
+        ]
+      */
+      /**
+     * Groups an array of objects by day in the local timezone, with a custom minute offset.
+     * * @param {Object[]} list - The array of objects to group.
+     * @param {string} timestampKey - The key in the objects containing the UTC date string.
+     * @param {number} offsetMinutes - The boundary offset in minutes (e.g., 180 for 3:00 AM).
+     * @returns {Object} An object where keys are 'YYYY-MM-DD' strings and values are arrays of objects.
+     */
+    function groupByLocalDayWithOffset(list, offsetMinutes = 0) {
+      const localTimeZone = Temporal.Now.timeZoneId();
+      const offsetDuration = Temporal.Duration.from({ minutes: offsetMinutes });
+
+      return list.reduce((groups, item) => {
+        const instant = Temporal.Instant.from(item[timestampKey]);
+        const localZonedDateTime = instant.toZonedDateTimeISO(localTimeZone);
+        const shiftedDateTime = localZonedDateTime.subtract(offsetDuration);
+        const dateKey = shiftedDateTime.toPlainDate().toString();
+
+        if (!groups[dateKey]) {
+          groups[dateKey] = { 
+              positiveValues: {
+                  normal: 0,
+                  strenuous: 0
+              },
+              negativeValues: {
+                  normal: 0,
+                  strenuous: 0
+              },
+              values: []
+          };
+        }
+
+        const scoreType = item.score > 0 ? "positiveValues" : "negativeValues";
+        const otherType = item.strenuous ? "strenuous" : "normal";
+
+        groups[dateKey][scoreType][otherType] += item.score;
+
+        groups[dateKey].values.push(item);
+
+        return groups;
+      }, {});
+    }
 
   function populateDailyTotal(dailyChoices) {
 
       
-      const $itemTemplate = $("#current-status-item");
-      const $ghostItemTemplate = $("#current-status-ghost-item");
-      const $positiveBlocks = $("#positive-blocks");
-      const $positiveTotal = $("#positive-total");
-      const $negativeBlocks = $("#negative-blocks");
-      const $negativeTotal = $("#negative-total");
+      const itemTemplate = document.getElementById("current-status-item");
+      const ghostItemTemplate = document.getElementById("current-status-ghost-item");
+      const positiveBlocks = document.getElementById("positive-blocks");
+      const positiveTotalEle = document.getElementById("positive-total");
+      const negativeBlocks = document.getElementById("negative-blocks");
+      const negativeTotalEle = document.getElementById("negative-total");  
 
       let positiveTotal = 0;
       let negativeTotal = 0;
@@ -64,13 +115,13 @@ TOOD:
 
           console.log("doing choice " + JSON.stringify(choice));
           let value = choice.weight;
-          let $template = populateChoiceTemplate(choice);
+          let template = populateChoiceTemplate(choice);
 
           if (value > 0) {
-              $positiveBlocks.append($template);
+              positiveBlocks.append(template);
               positiveTotal += value;
           } else {
-              $negativeBlocks.append($template);
+              negativeBlocks.append(template);
               negativeTotal += Math.abs(value);
           }
       }
@@ -78,28 +129,31 @@ TOOD:
       const difference = positiveTotal - negativeTotal;
       
       if (difference != 0) {
-          let ghostBlock = $("#current-status-ghost-item").html();
-          ghostBlock = ghostBlock.repeat(Math.abs(difference));
-          if (difference < 0) {
-              $positiveBlocks.append(ghostBlock);
-          } else {
-              $negativeBlocks.append(ghostBlock);
-          }
+        let ghostBlock = document.getElementById("current-status-ghost-item");
+        const repetitions = Math.abs(difference);
+
+        let parentNode = difference < 0 ? positiveBlocks : negativeBlocks;
+
+        for (let i = 0; i < repetitions; i++) {
+            parentNode.append(ghostBlock.content.cloneNode(true));
+        }
       }
 
-      $negativeTotal.text(Math.abs(negativeTotal));
-      $positiveTotal.text(positiveTotal);
+      negativeTotalEle.textContent = Math.abs(negativeTotal);
+      positiveTotalEle.textContent = positiveTotal;
         
   }
 
   function populateChoiceTemplate(choice) {
-      let template = $("#current-status-item").html();
-      template = template.replaceAll("${type}", choice.type);
-      template = template.replaceAll("${iconClass}", getIconClass(choice.type));
-      let $template = $(template);
-      $template.css("flex", Math.abs(choice.weight));
+      const template = document.getElementById("current-status-item");
+      const clone = template.content.cloneNode(true);
+      const unitDiv = clone.querySelector('.unit.value');
+      const iconElement = clone.querySelector('i');
 
-      return $template;
+      unitDiv.classList.add(choice.type);
+      iconElement.classList.add(choice.type); 
+
+      return clone;
   }
 
   function getIconClass(type) {
@@ -143,7 +197,7 @@ TOOD:
 
       const values = Array.from({ length: dayInfos.length }, () => Math.floor(Math.random() * 5) - 2);
 
-      let $dayContainer = $("#day-container");
+      let dayContainer = document.getElementById("day-container");
 
       for (let i = 0; i < dayInfos.length; i++) {
 
@@ -154,12 +208,12 @@ TOOD:
 
           console.log(dayInfo);
           console.log(dayTemplate);
-          $dayContainer.append(dayTemplate);
+          dayContainer.append(dayTemplate);
       }
   }
   
   function populateDayHistoryTemplate(dayInfo, value) {
-    let dayTemplate = $("#day-template").html();
+    let dayTemplate = document.getElementById("day-template").content.cloneNode(true);
 
     const positive = "positive";
     const negative = "negative";
@@ -170,14 +224,18 @@ TOOD:
     let value_1 = value < 0 ? negative : empty;
     let value_2 = value == -2 ? negative : empty;
 
-    dayTemplate = dayTemplate.replaceAll("${value2}", value2);
-    dayTemplate = dayTemplate.replaceAll("${value1}", value1);
-    dayTemplate = dayTemplate.replaceAll("${value-1}", value_1);
-    dayTemplate = dayTemplate.replaceAll("${value-2}", value_2);
+    const scoreMarkers = dayTemplate.querySelectorAll(".status");
+
+    scoreMarkers[0].classList.add(value2);
+    scoreMarkers[1].classList.add(value1);
+    scoreMarkers[3].classList.add(value_1);
+    scoreMarkers[4].classList.add(value_2);
     
-    dayTemplate = dayTemplate.replaceAll("${full}", dayInfo.dayName);
-    dayTemplate = dayTemplate.replaceAll("${abbr}", dayInfo.dayName.substring(0, 3));
-    dayTemplate = dayTemplate.replaceAll("${initial}", dayInfo.dayName.charAt(0));
+    const dayLabels = scoreMarkers[2].querySelectorAll("span");
+    dayLabels[0].textContent = dayInfo.dayName;
+    dayLabels[1].textContent = dayInfo.dayName.substring(0, 3);
+    dayLabels[2].textContent = dayInfo.dayName.charAt(0);
+
     return dayTemplate;
   }
 

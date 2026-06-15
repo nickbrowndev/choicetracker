@@ -32,6 +32,7 @@ TOOD:
   populateDayHistory(lastSevenDayInfo);
   populateDailyTotal(data);
   createSelectionButtons();
+  renderSelectionWheel();
 
   function retrieveHistory() {
       let url = 'https://api.sheety.co/133b32e7a990e2ebc6f2c10d5797c26f/behaviourTracker/logs';
@@ -295,6 +296,13 @@ TOOD:
               destination.append(clone);
           }
       }
+  }
+
+  function renderSelectionWheel() {
+      const elementId = "dynamic-wheel";
+
+
+    drawExplodedWheel(elementId, Object.values(BEHAVIOUR_CONFIGS));
   }
 
   function logChoice(choice) {

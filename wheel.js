@@ -11,11 +11,10 @@ const getCirclePoint = (cx, cy, r, angleInDegrees) => {
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 };
 
-function drawExplodedWheel(elementId, items) {
-
-  const wheelEl = document.getElementById(elementId);
+function drawExplodedWheel(wheelEl, options = {}) {
 
   wheelEl.querySelectorAll('.menu-item').forEach(el => el.remove());
+  const items = options.items;
 
   const totalSlices = items.length;
   const sliceAngle = 360 / totalSlices;
@@ -66,11 +65,18 @@ function drawExplodedWheel(elementId, items) {
       Z
     `;
 
+    const icon = item.icon;
+    const label = item.label;
+
     // Create SVG path element
     const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
     pathEl.setAttribute("d", pathData);
     pathEl.setAttribute("class", "category-slice menu-item");
     pathEl.setAttribute("fill", index % 2 === 0 ? "#e0e0e0" : "#d8d8d8");
+
+    if (typeof options.onclick == 'function') {
+        pathEl.addEventListener('click', (e) => options.onclick(e, item));
+    }
     wheelEl.appendChild(pathEl);
 
     // Text Label Placement (Centered in the modified wedge)
@@ -83,7 +89,11 @@ function drawExplodedWheel(elementId, items) {
     textEl.setAttribute("y", textPos.y + 4);
     textEl.setAttribute("text-anchor", "middle");
     textEl.setAttribute("class", "wheel-label menu-item");
-    textEl.textContent = item.label ? item.label.substring(0,3).toUpperCase() : item;
+    textEl.textContent = icon ? icon : item.label.substring(0,3).toUpperCase();
     wheelEl.appendChild(textEl);
   });
+
+  if (typeof options.oncancel == 'function') {
+      console.log("ading cancel");
+  }
 }

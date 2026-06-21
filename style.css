@@ -15,7 +15,9 @@
     --color-darker: rgba(0, 0, 0, 0.3);
 
     background-color: var(--color-background);
-    font-face: Arial, sans-serif;
+
+    --font-face:Arial, sans-serif;
+    font-face: var(--font-face);
 }
 
 .day-container {
@@ -90,11 +92,11 @@
     }
 }
 
-#current-status {
-            border: 2px solid black;
+    #current-status {
+        border: 2px solid black;
 
-    display: flex;
-    margin: 50px;
+        display: flex;
+        margin: 50px;
 
     .daily-total {
         width: 100%;
@@ -193,7 +195,34 @@
             width: 20px;
             height: 20px;
         }
+    }
 }
 
-.
+.task-selector {
+    display: flex;
+    justify-content: center;
+    
+    .radial-container {
+        position: relative;
+        width: 25%;
+        height: 25%;
+    }
 
+    .wheel-label {
+        font-face: var(--font-face);
+        pointer-events: none;
+    }
+
+    .category-slice {
+        fill: #448844;
+        stroke: #559955;
+        stroke-width: 2px;
+        transition: fill 0.25s ease, transform 0.25s ease;
+        transform-origin: 100px 100px;
+    }
+
+    .category-slice:hover {
+        fill: #88AA88
+        transform: scale(1.05);
+    }
+}

@@ -298,12 +298,60 @@ TOOD:
       }
   }
 
+const categoryWheel = document.getElementById('category-wheel');
+const submenuWheel = document.getElementById('submenu-wheel');
+
   function renderSelectionWheel() {
-      const elementId = "dynamic-wheel";
+      const elementId = "category-wheel";
 
 
-    drawExplodedWheel(elementId, Object.values(BEHAVIOUR_CONFIGS));
+    const onclickHandler = (e, item) => {
+        alert("clicked " + item.label);
+
+        const clickHandler = (e, item) => {
+            alert("clicked submenu" + item.label);
+        };
+        const cancelHandler = (e) => {
+            console.log("cancelling submenu");
+        }
+
+        if (item.behaviours.length > 1) {
+
+            drawExplodedWheel(document.getElementById("submenu-wheel"), {items: item.behaviours, onclick: clickHandler, oncancel: cancelHandler}); 
+        } else {
+            alert("no children");
+        }
+            
+    };
+    console.log("hello");
+    
+    drawExplodedWheel(document.getElementById("category-wheel"), {items: Object.values(BEHAVIOUR_CONFIGS), onclick: onclickHandler});
   }
+
+
+
+// When a primary category slice is clicked:
+function transitionToSubMenu(subActionsData) {
+  // 1. (Optional) Run your JS loop to populate the #submenu-wheel paths here...
+  
+  
+  
+  // 2. Flip the CSS classes to trigger the animation
+  categoryWheel.classList.remove('active');
+  categoryWheel.classList.add('hidden');
+
+  submenuWheel.classList.remove('hidden');
+  submenuWheel.classList.add('active');
+}
+
+// When the center "Back" button is clicked to return home:
+function transitionToMainMenu() {
+  submenuWheel.classList.remove('active');
+  submenuWheel.classList.add('hidden');
+
+  categoryWheel.classList.remove('hidden');
+  categoryWheel.classList.add('active');
+}
 
   function logChoice(choice) {
       submitLogEntry(choice.id, choice.score, null, choice.isStrenuous);

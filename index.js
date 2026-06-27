@@ -302,22 +302,28 @@ const categoryWheel = document.getElementById('category-wheel');
 const submenuWheel = document.getElementById('submenu-wheel');
 
   function renderSelectionWheel() {
-      const elementId = "category-wheel";
-
+      const wheelId = "category-wheel";
+      const subWheelId = "submenu-wheel";
+      const activeClass = "active";
+      const hiddenClass = "hidden";
 
     const onclickHandler = (e, item) => {
-        alert("clicked " + item.label);
 
         const clickHandler = (e, item) => {
             alert("clicked submenu" + item.label);
         };
         const cancelHandler = (e) => {
             console.log("cancelling submenu");
+            document.getElementById(subWheelId).classList.replace(activeClass, hiddenClass);
+            document.getElementById(wheelId).classList.replace(hiddenClass, activeClass);
         }
 
         if (item.behaviours.length > 1) {
 
-            drawExplodedWheel(document.getElementById("submenu-wheel"), {items: item.behaviours, onclick: clickHandler, oncancel: cancelHandler}); 
+            document.getElementById(wheelId).classList.replace(activeClass,hiddenClass);
+            document.getElementById(subWheelId).classList.replace(hiddenClass, activeClass);
+        
+            drawExplodedWheel(document.getElementById(subWheelId), {items: item.behaviours, onclick: clickHandler, oncancel: cancelHandler}); 
         } else {
             alert("no children");
         }
@@ -325,7 +331,7 @@ const submenuWheel = document.getElementById('submenu-wheel');
     };
     console.log("hello");
     
-    drawExplodedWheel(document.getElementById("category-wheel"), {items: Object.values(BEHAVIOUR_CONFIGS), onclick: onclickHandler});
+    drawExplodedWheel(document.getElementById(wheelId), {items: Object.values(BEHAVIOUR_CONFIGS), onclick: onclickHandler});
   }
 
 

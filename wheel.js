@@ -25,6 +25,26 @@ function drawExplodedWheel(wheelEl, options = {}) {
   const innerRadius = 40;
   const gapWidth = -5; // ➔ The CONSTANT gap width in pixels!
 
+  if (options.oncancel) {
+    const cancelEl = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    cancelEl.setAttribute("cx", cx);
+    cancelEl.setAttribute("cy", cy);
+    cancelEl.setAttribute("r", innerRadius + gapWidth);
+    cancelEl.setAttribute("fill", "red");
+    wheelEl.appendChild(cancelEl);
+    cancelEl.addEventListener("click", options.oncancel);
+
+  const textEl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    textEl.setAttribute("x", cx);
+    textEl.setAttribute("y", cy);
+    textEl.setAttribute("text-anchor", "middle");
+    textEl.setAttribute("class", "wheel-label cancel");
+    textEl.textContent = "↩";
+    wheelEl.appendChild(textEl);
+
+
+  } 
+
   items.forEach((item, index) => {
     const startAngle = index * sliceAngle;
     const endAngle = (index + 1) * sliceAngle;

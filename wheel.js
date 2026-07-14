@@ -22,14 +22,14 @@ function drawExplodedWheel(wheelEl, options = {}) {
   // Dimensions
   const cx = 100, cy = 100;
   const outerRadius = 85;
-  const innerRadius = 40;
+  const innerRadius = 45;
   const gapWidth = -5; // ➔ The CONSTANT gap width in pixels!
 
   if (options.oncancel) {
     const cancelEl = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     cancelEl.setAttribute("cx", cx);
     cancelEl.setAttribute("cy", cy);
-    cancelEl.setAttribute("r", innerRadius + gapWidth);
+    cancelEl.setAttribute("r", innerRadius + gapWidth + gapWidth + gapWidth);
     cancelEl.setAttribute("fill", "red");
     wheelEl.appendChild(cancelEl);
     cancelEl.addEventListener("click", options.oncancel);
@@ -46,8 +46,8 @@ function drawExplodedWheel(wheelEl, options = {}) {
   } 
 
   items.forEach((item, index) => {
-    const startAngle = index * sliceAngle;
-    const endAngle = (index + 1) * sliceAngle;
+    const startAngle = (index * sliceAngle) - 90;
+    const endAngle = ((index + 1) * sliceAngle) - 90;
 
     // 1. Get base geometric corner points (without gaps)
     const os = getCirclePoint(cx, cy, outerRadius, startAngle);

@@ -31,7 +31,6 @@ TOOD:
   console.log(lastSevenDayInfo);
   populateDayHistory(lastSevenDayInfo);
   populateDailyTotal(data);
-  createSelectionButtons();
   renderSelectionWheel();
 
   function retrieveHistory() {
@@ -270,32 +269,6 @@ TOOD:
       }
 
       return result;
-  }
-
-  function createSelectionButtons() {
-      let template = document.getElementById('behaviour-selector-template');
-      let destination = document.getElementById('behaviour-selection');
-      for (let behaviourId in BEHAVIOUR_CONFIGS) {
-
-          let behaviour = BEHAVIOUR_CONFIGS[behaviourId];
-          for (let choice of behaviour.behaviours) {
-              const clone = template.content.cloneNode(true);
-
-              const button = clone.querySelector('button');
-              const iconSpan = button.querySelector(".behaviour-icon");
-              const descriptionSpan = button.querySelector(".behaviour-description");
-
-              button.id = "behaviour-" + choice.id;
-              iconSpan.textContent = choice.icon ?? behaviour.icon;
-              descriptionSpan.textContent = choice.description;
-
-              button.addEventListener('click', () => {
-                  logChoice(choice);
-              });
-
-              destination.append(clone);
-          }
-      }
   }
 
 const categoryWheel = document.getElementById('category-wheel');

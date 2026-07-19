@@ -6,6 +6,8 @@ TOOD:
  - [ ] arrange and style buttons
  - [ ] add custom entry form
  */
+import {BEHAVIOUR_CONFIGS, DAY_MINUTE_OFFSET} from './config.js';
+import {DataService} from './api.js';
 
   const currentDate = new Date();
   const todayDateInfo = getDateInfo(currentDate);
@@ -111,7 +113,7 @@ TOOD:
       let negativeTotal = 0;
       let maxTotal = 0;
 
-      for (choice of dailyChoices) {
+      for (const choice of dailyChoices) {
 
           console.log("doing choice " + JSON.stringify(choice));
           let value = choice.weight;

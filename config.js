@@ -1,7 +1,7 @@
 
-const DAY_MINUTE_OFFSET = 3*60;
+export const DAY_MINUTE_OFFSET = 3*60;
 
-const BEHAVIOUR_CONFIGS = {
+export const BEHAVIOUR_CONFIGS = {
   'squash': {
     label: 'Squash',
     icon: '🎾',

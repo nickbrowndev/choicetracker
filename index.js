@@ -1,10 +1,6 @@
-/*
-TOOD:
- - [ ] Add local caching for recent values
- - [ ] Retrieve history on load (if required)
- - [ ] Update page state on button submit
- - [ ] arrange and style buttons
- - [ ] add custom entry form
+/* TODO Next
+ * - Double check loading works from spreadsheet
+ * - Figure out saving, ensuring values aren't saved, only key is. Value should be looked up on load.
  */
 import {BEHAVIOUR_CONFIGS, DAY_MINUTE_OFFSET} from './config.js';
 import {DataService} from './api.js';

@@ -9,40 +9,48 @@ TOOD:
 import {BEHAVIOUR_CONFIGS, DAY_MINUTE_OFFSET} from './config.js';
 import {DataService} from './api.js';
 
-  const currentDate = new Date();
-  const todayDateInfo = getDateInfo(currentDate);
+  const HISTORY = 7;
+  const today = Temporal.Now.zonedDateTimeISO();
 
 
-  const lastSevenDayInfo = getPreviousDates(currentDate, 7).map(getDateInfo);
+  const lastSevenDays = getPreviousDates(today, HISTORY);
 
-  const data = [
-  { weight: 3, type: "strength"},
-  { weight: 1, type: "strength"},
-  { weight: -2, type: "strength"},
-  { weight: -1, type: "strength"}];
-  
-  if (false) {
-      retrieveHistory()
-      .then(responseJson => parseHistory(responseJson))
+  const startOfHistory = today.subtract({days: HISTORY}).startOfDay();
+  const endOfHistory = today.add({days: 1}).startOfDay().subtract({milliseconds: 1});
+
+  if (true) {
+      retrieveAllHistory()
+      .then(responseJson => parseHistory(responseJson, startOfHistory.toInstant()))
       .then(history => {
-          populateDayHistory(history);
+          // sort by date
+          // each method filters for appropriate records and calculates
+          console.log("hiya");
 
-          populateDailyTotal(history);
+          const todayDateKey = today.toPlainDate().toString();
+          const todayData = history[todayDateKey];
+          delete history.todayDateKey;
+
+          populateDayHistory(lastSevenDays, history);
+
+          populateDailyTotal(todayData);
       });
   }
-  console.log(lastSevenDayInfo);
-  populateDayHistory(lastSevenDayInfo);
-  populateDailyTotal(data);
+  const values = Array.from({ length: lastSevenDays.length }, () => Math.floor(Math.random() * 5) - 2);
+
+  //populateDayHistory(lastSevenDays, values);
+  //populateDailyTotal(data);
   renderSelectionWheel();
 
-  function retrieveHistory() {
-      let url = 'https://api.sheety.co/133b32e7a990e2ebc6f2c10d5797c26f/behaviourTracker/logs';
-     return fetch(url)
-    .then((response) => response.json());
+  function retrieveAllHistory() {
+      return DataService.fetchHistory();
   }
 
   function parseHistory(data) {
-      return groupByLocalDayWithOffset(data, DAY_MINUTE_OFFSET);
+
+      const days = [...lastSevenDays];
+      days.push(today.toPlainDate());
+
+      return groupByLocalDayWithOffset(data, days, DAY_MINUTE_OFFSET);
   }
 
       // TOOD
@@ -59,48 +67,56 @@ import {DataService} from './api.js';
       */
       /**
      * Groups an array of objects by day in the local timezone, with a custom minute offset.
-     * * @param {Object[]} list - The array of objects to group.
-     * @param {string} timestampKey - The key in the objects containing the UTC date string.
+     * @param {Object[]} data - The array of objects to group.
+     * @param {Temporal.Instant} cutOffInstant - The earliest time that values should be processed. Values before this will be ignored
      * @param {number} offsetMinutes - The boundary offset in minutes (e.g., 180 for 3:00 AM).
      * @returns {Object} An object where keys are 'YYYY-MM-DD' strings and values are arrays of objects.
      */
-    function groupByLocalDayWithOffset(list, offsetMinutes = 0) {
+    function groupByLocalDayWithOffset(data = [], localDays, offsetMinutes = 0) {
       const localTimeZone = Temporal.Now.timeZoneId();
       const offsetDuration = Temporal.Duration.from({ minutes: offsetMinutes });
 
-      return list.reduce((groups, item) => {
+      /* 
+       * Convert array into map, populating a blank object for each day we're interested in
+       */
+      const dayData = localDays.reduce((acc, obj) => {
+          acc[obj.toString()] = { 
+                  positiveValues: {
+                      normal: 0,
+                      strenuous: 0
+                  },
+                  negativeValues: {
+                      normal: 0,
+                      strenuous: 0
+                  },
+                  values: []
+              };
+          return acc;
+      }, {});
+
+      data.forEach(item => {
         const instant = Temporal.Instant.from(item[timestampKey]);
         const localZonedDateTime = instant.toZonedDateTimeISO(localTimeZone);
         const shiftedDateTime = localZonedDateTime.subtract(offsetDuration);
         const dateKey = shiftedDateTime.toPlainDate().toString();
 
-        if (!groups[dateKey]) {
-          groups[dateKey] = { 
-              positiveValues: {
-                  normal: 0,
-                  strenuous: 0
-              },
-              negativeValues: {
-                  normal: 0,
-                  strenuous: 0
-              },
-              values: []
-          };
+        const dayDataValue = dayData[dateKey];
+
+        if (dayDataValue) {
+
+            const scoreType = item.score > 0 ? "positiveValues" : "negativeValues";
+            const otherType = item.strenuous ? "strenuous" : "normal";
+
+            dayDataValue[scoreType][otherType] += item.score;
+
+            dayDataValue.values.push(item);
         }
+      });
 
-        const scoreType = item.score > 0 ? "positiveValues" : "negativeValues";
-        const otherType = item.strenuous ? "strenuous" : "normal";
-
-        groups[dateKey][scoreType][otherType] += item.score;
-
-        groups[dateKey].values.push(item);
-
-        return groups;
-      }, {});
+      return dayData;
     }
 
-  function populateDailyTotal(dailyChoices) {
-
+  function populateDailyTotal(todayValues) {
       
       const itemTemplate = document.getElementById("current-status-item");
       const ghostItemTemplate = document.getElementById("current-status-ghost-item");
@@ -113,7 +129,7 @@ import {DataService} from './api.js';
       let negativeTotal = 0;
       let maxTotal = 0;
 
-      for (const choice of dailyChoices) {
+      for (const choice of todayValues.values) {
 
           console.log("doing choice " + JSON.stringify(choice));
           let value = choice.weight;
@@ -192,29 +208,23 @@ import {DataService} from './api.js';
     return `<i class="${pack} ${icon}"></i>`;
   }
 
-
-
-
-  function populateDayHistory(dayInfos) {
-
-      const values = Array.from({ length: dayInfos.length }, () => Math.floor(Math.random() * 5) - 2);
+  function populateDayHistory(dates, values) {
 
       let dayContainer = document.getElementById("day-container");
 
-      for (let i = 0; i < dayInfos.length; i++) {
+      for (let i = 0; i < dates.length; i++) {
 
-          let dayInfo = dayInfos[i];
-          let value = values[i];
+          let date = dates[i];
+          let value = values[date.toString()];
 
-          let dayTemplate = populateDayHistoryTemplate(dayInfo, value);
+          let dayTemplate = populateDayHistoryTemplate(date, value);
 
-          console.log(dayInfo);
           console.log(dayTemplate);
           dayContainer.append(dayTemplate);
       }
   }
   
-  function populateDayHistoryTemplate(dayInfo, value) {
+  function populateDayHistoryTemplate(date, value) {
     let dayTemplate = document.getElementById("day-template").content.cloneNode(true);
 
     const positive = "positive";
@@ -234,40 +244,17 @@ import {DataService} from './api.js';
     scoreMarkers[4].classList.add(value_2);
     
     const dayLabels = scoreMarkers[2].querySelectorAll("span");
-    dayLabels[0].textContent = dayInfo.dayName;
-    dayLabels[1].textContent = dayInfo.dayName.substring(0, 3);
-    dayLabels[2].textContent = dayInfo.dayName.charAt(0);
+    dayLabels[0].textContent = date.toLocaleString(undefined, {weekday: 'long'});
+    dayLabels[1].textContent = date.toLocaleString(undefined, {weekday: 'short'});
+    dayLabels[2].textContent = date.toLocaleString(undefined, {weekday: 'narrow'});
 
     return dayTemplate;
   }
 
-  /*
-   * Returns an object containing the zeroed Date, a formatted Date and the
-   * day initial.
-   */
-  function getDateInfo(date) {
-    let year = date.getFullYear().toString();
-    let month = date.getMonth().toString().padStart(2, '0');
-    let day = date.getDate().toString().padStart(2, '0');
-
-    let actualDate = new Date(year, month, day);
-    let actualDateFormat = [year, month, day].join("-");
-    let dayName = actualDate.toLocaleDateString(undefined, {weekday: 'long'});
-
-    return {
-        date: actualDate,
-        formattedDate: actualDateFormat,
-        dayName: dayName,
-    };
-  }
-
-  function getPreviousDates(date, numberOfPriorDays) {
+  function getPreviousDates(zonedDateTime, numberOfPriorDays) {
       let result = new Array(numberOfPriorDays);
       for (let i = 0; i < numberOfPriorDays; i++) {
-
-          let newDate = new Date(date);
-          newDate.setDate(newDate.getDate() - i - 1);
-          result[i] = newDate;
+          result[i] = zonedDateTime.subtract({days: numberOfPriorDays - i}).toPlainDate();
       }
 
       return result;

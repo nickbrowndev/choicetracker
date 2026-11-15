@@ -60,7 +60,7 @@ export const BEHAVIOUR_CONFIGS = {
     icon: '🚴‍♂️',
     behaviours: [
       { id: 'CYCLING_BIKE', label: 'BIke Ride', score: 2, isStrenuous: true },
-      { id: 'CYCLING_ZONE2', label: 'Zone 2', score: 1 }
+      { id: 'CYCLING_ZONE2', label: 'Zone 2', score: 1 },
     ]
   },
   'food': {
@@ -85,14 +85,14 @@ export const BEHAVIOUR_CONFIGS = {
   'travel': {
     label: 'Travel',
     behaviours: [
-      { id: 'TRAVEL_ACTIVE', label: 'Active Journey', score: 1 }
+      { id: 'TRAVEL_ACTIVE', label: 'Active Journey', score: 1 },
     ],
   },
   'productivity': {
     label: 'Productivity',
     behaviours: [
       { id: 'PRODUCTIVITY_PROCRASTINATION', label: 'Prograstination/Poor Focus', score: -2 },
-      { id: 'PRODUCTIVITY_DEEP_WORK', label: 'Deep Work Block Completed', score: 1 }
+      { id: 'PRODUCTIVITY_DEEP_WORK', label: 'Deep Work Block Completed', score: 1 },
     ]
   }
 };

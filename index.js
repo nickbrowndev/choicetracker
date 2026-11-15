@@ -194,7 +194,7 @@ import {DataService} from './api.js';
     "mobility" : "",
     "junkfood": "fa-pizza-slice",
     "beer": "fa-beer-mug-empty",
-    "ice-cream": "fa-ice-cream"
+    "ice-cream": "fa-ice-cream",
   };
 
   function renderSingleIcon(spec) {
